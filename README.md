@@ -18,7 +18,7 @@ Responsible for parsing the word document and returning a json representation of
 \*This project has given me a new appreciation for just how important the PDF standard is/was. 
 
 #### pdfLetter
-Responsible for combining the json template and custom_content to produce pdf file(s), the produced files can be stored locally or stored in a database. 
+Responsible for combining the json template and merge_field content to produce pdf file(s), the produced files can be stored locally or stored in a database. 
 ##### Currently Supports
 * Headers/Footers
 * Decking (Combining multiple letters into a single PDF)
