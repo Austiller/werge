@@ -33,6 +33,7 @@ Responsible for combining the json template and custom_content to produce pdf fi
 Essential to werge's functionality is the custom json structure representing the MS word file. 
 Below is the default_structure found in the config folder, used as the basis for the word file converstion. 
 
+It's the basis for defining the layout of the resulting PDF, with full support for ReportLab and PDF text styles.
 
 
 ```
