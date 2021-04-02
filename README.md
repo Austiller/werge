@@ -29,12 +29,21 @@ Responsible for combining the json template and custom_content to produce pdf fi
 ##### Pending
 * HTML Output
 
+#### To Install
+Download the zip and extract it then run the setup.py
+
+
+#### Example
+The example folder contains a example letter, json file and test data. The example uses a CSV file but any pandas DataFrame can be used to populate the mailMerge Fields, including DataFrames produced from SQL queries. 
+ 
+
 #### JSON Structure
 Essential to werge's functionality is the custom json structure representing the MS word file. 
 Below is the default_structure found in the config folder, used as the basis for the word file converstion. 
 
 It's the basis for defining the layout of the resulting PDF, with full support for ReportLab and PDF text styles.
 
+You can see an example json structure and letter in the example folder.
 
 ```
 {
