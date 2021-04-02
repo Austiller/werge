@@ -13,14 +13,14 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFError
 from reportlab.rl_config import defaultPageSize
+from PyPDF2 import PdfFileMerger
 import base64, json
-from datetime import date
 from os import system
 import os
 import configparser
 import sys
-
-
+from tempfile import TemporaryDirectory
+from datetime import date, datetime
 
 
 
@@ -74,39 +74,153 @@ class PdfLetter:
         self.field_contents = field_contents
 
 
-    @property
-    def footer_text (self):
-        return [footer for footer in self.footer if footer["type"].lower() != "image"]
-
-
-    @property
-    def footer_images(self):
-        return [footer for footer in self.footer if footer["type"].lower() == "image"]
-
-
-    @property
-    def header_text (self):
-        return [header for header in self.header if header["type"].lower() != "image"]
-
-
-    @property
-    def header_images (self):
-        return [header for header in self.header if header["type"].lower() == "image"]
-
 
     @property
     def _file_name (self):
         return self.doc.filename
 
+    @staticmethod
+    def create_pdf (format_file:json,mfield_df:DataFrame):
 
+        # generate the pdfs to merge into one long PDF
+        # this is required by the mailroom
+        generated_pdfs = []
+
+
+        try:
+
+    
+            # Create a dictionary where the custom file name (set by the set_file_name function and file_name_keys)
+            # Using the custom_conntent dictionary we're able to declare specific items for the file_name
+            generated_pdfs = [PdfLetter.from_json_file(
+                                format_file=format_file,
+                                field_contents=fc,
+                                file_name = "{}".format(datetime.now().timestamp() * 1000)
+                                ) for fc in  PdfLetter.convert_dataframe(mfield_df,format_file)]
+
+
+           return generated_pdfs
+
+
+        except AttributeError as ae:
+            print("Unable to locate the template specified, please check the name and try again.")
+            if DEBUG == True:
+                raise ae
+
+    @staticmethod
+    def merge_pdf (letters,temp_directory_prefix="letters_",merged_pdf_name="mergedPdf.pdf"):
+
+        merger = PdfFileMerger()
+        tempdirecpdf = TemporaryDirectory(prefix=temp_directory_prefix)
+
+        print("Building PDF Now")
+        for letter in letters:
+            merger.append(letter.save_pdf(dir_location=tempdirecpdf.name))
+            
+        try:
+            merger.write(f"{merged_pdf_name}")
+            merger.close()
+        except Exception as e:
+            raise e
+
+        tempdirecpdf.cleanup()
+        return 1
+
+    @staticmethod
+    def convert_dataframe (dataframe:DataFrame,format_file:json)->dict:
+
+        """
+
+
+          The final data structure would look like this a list of nested dictionaries, where each item in the list is representing the data used in one letter. the ooutermost key of each dictionary item in the list corresponds to each paragraph_key named in the tamplate
+          the key's used inner most  nested dictionary correspond to column names used in the letter.
+
+          example of the structure
+          [
+            {
+                paragraph_key: {ACCOUNT_LAST_4: value},
+                "paragraph_key_2":{APPLICATION_ID: value},
+
+                  ...
+
+             },
+
+          ]
+          field_contents can be overriden with the list of dictionary items.
+          This can be code that queries a database or loads an excel spreadsheet like in this example.
+          the outer most key ("paragraph_key") represents how the code find the appropriate dictionary for the paragraph
+          the second dictionary uses "content" keys to populate the appropriate value
+
+
+          """
+        template_keys,required_columns = PdfLetter.template_variables(format_file)
+        if len(format_file["data_map"]) > 0:
+            required_columns = [dm for dm in format_file["data_map"]]
+
+        struct_df = dataframe[required_columns]
+        struct_df_dict = struct_df.to_dict("records")       
+        field_contents = []
+
+        for i in struct_df_dict:
+            # Create a dictionary to hold the paragraph keys (paragraph_keys)
+            new_dict = {}
+            for k,v in  template_keys.items():
+                # set the paragraph_key and create a dictionary for the content keys
+                new_dict[k] = {}
+                for a in v:
+                    # set the correct content key and value
+                    new_dict[k][a] = i[a]
+                
+            field_contents.append(new_dict)
+
+
+        return field_contents
+
+
+    @staticmethod
+    def template_variables (format_file):
+
+        """
+
+        Find the custom variables defined within the template and build the appropriate data structure to be populated by column data later.
+            returns:
+
+                self.custom_Vars (dict): Preliminary structure with which column data will populate
+
+        """
+
+        template_vars = {}
+        required_columns = []
+        # get all the custom vars that are defined in the sample paragraph
+        for pType in ["header","footer","body"]:
+            for cv in format_file["pages"][pType]:
+
+                if  cv.get("paragraph_key","") != "":                  
+                    content_keys = [s for s in cv["paragraph_key"].split(":")]#re.findall(r"(\{*\S+\}*)",cv["content"])]
+                    required_columns.extend(content_keys)
+                    template_vars[cv["paragraph_key"]] = content_keys
+                else:
+                    continue
+
+        # finding content keys in tables, requires addtional iteration due to the table structure, which favors more human readability
+        # over efficiency.
+        for table in list(format_file["pages"]["tables"]):
+            for r in list(table["rows"]):
+                for c in  r.values():
+                    for v in c:
+                        content_keys = [s[1:-1] for s in re.findall(r"(\{\S*\s*\})+",v["content"])]
+                        required_columns.extend(content_keys)
+                        template_vars[v["paragraph_key"]] = content_keys
+                        
+
+        return template_vars,required_columns
 
     def save_pdf (self,dir_location)->str:
-
-
-        #if new_file_name != None:
-        self.doc.filename = dir_location + self._file_name
-        self.doc.build(self.story,onFirstPage=self._add_header_footer, onLaterPages=self._add_header_footer)
-
+        try:
+            self.doc.filename = dir_location + self._file_name
+            self.doc.build(self.story,onFirstPage=self._add_header_footer, onLaterPages=self._add_header_footer)
+        except Exception as e:
+            raise e
 
         return self.doc.filename
 
@@ -126,14 +240,9 @@ class PdfLetter:
         """
 
         for style in new_style:
-
             p_style = {}
 
-
             for k,v in style.items():
-
-
-
                 # Convert any text rl_style enum values to the enum itself
                 # this allows the whole dictionary of values to be passed as it relates to ReportLab enums
                 # ex. {'alignment':'TA_JUSTIFY'} -> {'alignment':TA_JUSTIFY}
@@ -153,8 +262,7 @@ class PdfLetter:
     def register_font (self,font_name:str)->None:
 
         """
-
-            To be completed later
+            Register a custom font not supported by the PDF standard.
 
             args:
                 font_name (str): The name of the font to register.
@@ -197,8 +305,6 @@ class PdfLetter:
         # format the text with font
         para_text = None
 
-
-
         # Check if a custom variable or item is set for this paragraph.
         # if one is set, call it.
         if jsf_paragraph.get('paragraph_key',False):
@@ -208,8 +314,6 @@ class PdfLetter:
                 # paragraph_key json key allows the use of multiple custom variables
                 formated_content = jsf_paragraph["content"].format(**self.field_contents[jsf_paragraph['paragraph_key']])
                 para_text = jsf_paragraph["font"].format(*formated_content.split(";;"))
-
-        
 
             except Exception as e:
                 print("unable to add custom content to {}".format(jsf_paragraph['font'])) # should switch to f strings, old habbits die hard
@@ -223,9 +327,7 @@ class PdfLetter:
         para = Paragraph(para_text,self.style_sheet[jsf_paragraph['style'] ])
 
 
-
         if  append_to_story == "False":
-
             return para
 
 
@@ -233,7 +335,6 @@ class PdfLetter:
         try:
 
             # If the paragraph is to be used as a heaader or footer have it return to the calling function to properly be drawn on the document
-
             self.story.append( para )
 
         except Exception as e:
@@ -256,10 +357,7 @@ class PdfLetter:
             Adds an image to the document
 
             arguements:
-
                 jsf_image (json): a json object that describes the image including any base64 content that represents the image.
-
-
 
             returns:
 
@@ -523,94 +621,7 @@ class PdfLetter:
         self.header = headers
         self.footer = footers
 
-    @staticmethod
-    def convert_dataframe (dataframe:DataFrame,format_file:json)->dict:
-
-        """
-
-
-          The final data structure would look like this a list of nested dictionaries, where each item in the list is representing the data used in one letter. the ooutermost key of each dictionary item in the list corresponds to each paragraph_key named in the tamplate
-          the key's used inner most  nested dictionary correspond to column names used in the letter.
-
-          example of the structure
-          [
-            {
-                paragraph_key: {ACCOUNT_LAST_4: value},
-                "paragraph_key_2":{APPLICATION_ID: value},
-
-                  ...
-
-             },
-
-          ]
-          field_contents can be overriden with the list of dictionary items.
-          This can be code that queries a database or loads an excel spreadsheet like in this example.
-          the outer most key ("paragraph_key") represents how the code find the appropriate dictionary for the paragraph
-          the second dictionary uses "content" keys to populate the appropriate value
-
-
-          """
-        template_keys,required_columns = PdfLetter.template_variables(format_file)
-        if len(format_file["data_map"]) > 0:
-            required_columns = [dm for dm in format_file["data_map"]]
-
-        struct_df = dataframe[required_columns]
-        struct_df_dict = struct_df.to_dict("records")       
-        field_contents = []
-
-        for i in struct_df_dict:
-            # Create a dictionary to hold the paragraph keys (paragraph_keys)
-            new_dict = {}
-            for k,v in  template_keys.items():
-                # set the paragraph_key and create a dictionary for the content keys
-                new_dict[k] = {}
-                for a in v:
-                    # set the correct content key and value
-                    new_dict[k][a] = i[a]
-                
-            field_contents.append(new_dict)
-
-
-        return field_contents
-
-
-    @staticmethod
-    def template_variables (format_file):
-
-        """
-
-        Find the custom variables defined within the template and build the appropriate data structure to be populated by column data later.
-            returns:
-
-                self.custom_Vars (dict): Preliminary structure with which column data will populate
-
-        """
-
-        template_vars = {}
-        required_columns = []
-        # get all the custom vars that are defined in the sample paragraph
-        for pType in ["header","footer","body"]:
-            for cv in format_file["pages"][pType]:
-
-                if  cv.get("paragraph_key","") != "":                  
-                    content_keys = [s for s in cv["paragraph_key"].split(":")]#re.findall(r"(\{*\S+\}*)",cv["content"])]
-                    required_columns.extend(content_keys)
-                    template_vars[cv["paragraph_key"]] = content_keys
-                else:
-                    continue
-
-        # finding content keys in tables, requires addtional iteration due to the table structure, which favors more human readability
-        # over efficiency.
-        for table in list(format_file["pages"]["tables"]):
-            for r in list(table["rows"]):
-                for c in  r.values():
-                    for v in c:
-                        content_keys = [s[1:-1] for s in re.findall(r"(\{\S*\s*\})+",v["content"])]
-                        required_columns.extend(content_keys)
-                        template_vars[v["paragraph_key"]] = content_keys
-                        
-
-        return template_vars,required_columns
+   
 
 
     @classmethod
