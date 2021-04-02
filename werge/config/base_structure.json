@@ -1,0 +1,56 @@
+{   
+
+
+    "page_style":
+       {
+       "template":"SimpleDocTemplate",
+       "default_name":"name_here.pdf",
+       "style_sheet":"getSampleStyleSheet",
+       "rightMargin":0.50,
+       "leftMargin":0.50,
+       "topMargin":0.5,
+       "bottomMargin":0.5,
+       "default_style":"Normal"
+       },
+
+    "data_map":[],
+    "content_keys":[],
+    "default_spacer":[1.1,10],
+    "table_styles":[],
+    "text_styles":[
+                   {"name":"Justify",
+                   "alignment":"TA_JUSTIFY",
+                   "fontName":"Times",
+                   "fontSize":12,
+                   "leading":12
+                   },
+                   {
+                   "name": "Footer",
+                   "alignment": "TA_CENTER",
+                   "fontName": "Times",
+                   "fontSize":11
+               },
+               {
+                   "name": "Header",
+                   "alignment": "TA_RIGHT",
+                   "fontName": "Times",
+                   "fontSize":11
+               }
+   ],  
+   "pages":
+           {"header":[],
+           "footer":[],
+           "tables":[],
+           "body":[
+                   {
+                   "type": "Spacer",
+                   "spacer": [1.1,50]
+                   }
+           ]
+   }
+
+ 
+
+}
+
+ 
