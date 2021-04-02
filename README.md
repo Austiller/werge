@@ -13,7 +13,7 @@ Responsible for parsing the word document and returning a json representation of
 * Listed Paragraphs/Bullets
 * Images/Graphics
 * MergeFields
-* Non-Standard PDF Fonts
+* Standard PDF Fonts
 
 \*This project has given me a new appreciation for just how important the PDF standard is/was. 
 
@@ -28,6 +28,7 @@ Responsible for combining the json template and custom_content to produce pdf fi
 * Bulleted Lists
 ##### Pending
 * HTML Output
+* Non-Standard PDF Fonts
 
 #### To Install
 Download the zip and extract it then run the setup.py
