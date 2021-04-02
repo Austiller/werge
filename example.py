@@ -73,9 +73,7 @@ class Letter:
 
 
         try:
-
             # Add validation logic here
-
             pass
 
         except Exception as e:
@@ -89,22 +87,17 @@ class Letter:
     def format_data (self)->DataFrame:
 
         """
-
                 This function is where you can define custom formating of the data.
 
                 args:
                     dataframe (DataFrame): The formated datafram
- 
 
         """
 
-
         try:
-
             self.dataframe.replace(np.nan,'',regex=True,inplace=True)
 
         except Exception as e:
-
             raise e
 
  
@@ -168,7 +161,6 @@ class Letter:
  
 
     @classmethod
-
     def load_data_from_sql (cls,format_file,*args,**kwargs):
 
 
@@ -195,7 +187,6 @@ class Letter:
     @staticmethod
     def merge_pdf (letters,temp_directory_prefix="letters_",merged_pdf_loc="C:\\temp",merged_pdf_name="mergedPdf.pdf"):
 
-
         merger = PdfFileMerger()
         tempdirecpdf = TemporaryDirectory(prefix=temp_directory_prefix)
 
@@ -216,13 +207,10 @@ class Letter:
 
 def word_to_json(*args,**kwargs):
 
-    # docx file, using tkinter filedialog the mode "rb" must be specified or a fileError will be thrown
-
-    
+    # docx file, using tkinter filedialog the mode "rb" must be specified or a fileError will be thrown    
     input("Press Any Key to load a docx file to parse.")
     file_loc = filedialog.askopenfile(filetypes = [("word File", "*.docx")] ,mode="rb")
     
-
     parser = Parser.from_file(file_loc,prompt=True)
     file_loc.close()
     input("Parsing complete, press any key to save the Json template")

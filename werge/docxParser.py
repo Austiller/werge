@@ -589,7 +589,7 @@ class Parser:
 
             if config["DEFAULTS"].getboolean("use_docx_file_name"):
                 file_location = (self.file_location.name.split("/")[-1]).split(".")[0] + ".json"
-
+                
 
             else:
 
