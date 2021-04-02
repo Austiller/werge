@@ -30,7 +30,6 @@
         {
             "name": "Justify",
             "alignment": "TA_JUSTIFY",
- 
             "bulletIndent":12,
             "leading": 12
         },
@@ -43,7 +42,6 @@
         {
             "name": "Header",
             "alignment": "TA_RIGHT",
-            "fontName": "Times",
             "fontSize": 11
         }
     ],

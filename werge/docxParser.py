@@ -122,6 +122,21 @@ class DocxParagraph:
         self.content = ""
         self.paragraph_key = paragraph_key
         self._parser = parser
+    
+    
+    
+    def supported_spec_styles (self):
+        """
+            Efficient way of calling functions that check for special style and content types, like bulleted lists,
+            images and other supported types. These functions all begin with _spec_
+        
+        """
+        for s in dir(self):
+            if "_spec_" in s[0:6]:
+                getattr(self,s)()
+      
+        return 
+
 
     @property
     def is_empty (self):
@@ -241,19 +256,7 @@ class DocxParagraph:
 
             return self.content
 
-
-    def check_for_special_styles (self)->str:
-
-        """
-            Check the paragraph type, if it's listed or bolded add the appropriate characters and perform an addtional settions/logic relevant to the special type.
-            e.g. if an image make sure to add the appropriate json structure, including prompt the user to select the image if set
-
-            args:
-                None
-
-    
-        """
-
+    def _spec_style_image (self):
         self.style = self._parser.json_structure["page_style"]["default_style"]
 
         namespaces = {"a":"http://schemas.openxmlformats.org/drawingml/2006/main",
@@ -270,31 +273,27 @@ class DocxParagraph:
 
                     if self.prompt_user(f"{img_name} was found, load image now? Y/N"):
                         b64_image, self.image_name = image_to_b64()
-                        self.content = b64_image.decode('utf-8')
+                        self.content = b64_image.decodae('utf-8')
                     
                     else:
                         self.image_name = "untilted graphic"
 
+
+        return self.style
     
-       
-        elif self._style.name.lower() == "list paragraph" or re.search(r"^(\u2022|\u2023|\u25E6|\u2043|\u2219).", self.content) != None:
+    def _spec_style_bullet (self):
+        if self._style.name.lower() == "list paragraph" or re.search(r"^(\u2022|\u2023|\u25E6|\u2043|\u2219).", self.content) != None:
             self.style = "Justify"
             self.font = "<font><bullet>&bull;</bullet>{0}</font>"
+        return self.style
 
-        
-        
-        else:
-
-            # Check if style is already added in the text_style section
-            if self._style.name not in [t_style["name"] for t_style in  self._parser.json_structure["text_styles"]]:
-                self.add_style()
+    def _spec_style_font (self):
+        if self._style.name not in [t_style["name"] for t_style in  self._parser.json_structure["text_styles"]]:
+            self.add_style()
 
             self.style = self._style.name
 
- 
-
-        return self.style
-
+  
  
 
     @staticmethod
@@ -368,7 +367,11 @@ class DocxParagraph:
 
         doc_para = cls(text=para.text,style=para.style,p_type=para_type,paragraph=para._p,parser=parser)
         doc_para.find_mail_merge_fields()
-        doc_para.check_for_special_styles()
+        
+        doc_para.style = doc_para._parser.json_structure["page_style"]["default_style"]
+        doc_para.supported_spec_styles()
+        #input(doc_para.supported_spec_styles())
+        #doc_para.check_for_special_styles()
  
 
         return doc_para
