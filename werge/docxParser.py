@@ -23,7 +23,6 @@ import sys
  
 
 BASE_DIR = os.path.dirname(__file__)
-
 build_path = lambda rel_file: os.path.join(BASE_DIR,rel_file)
 
  
@@ -85,17 +84,11 @@ def image_to_b64 ()->base64:
 
   
 
- 
-
- 
-
 class DocxParagraph:
 
     """
 
         A class that handles "paragraphs" found in word docs, converting them into the appropriate json structure for later reproduction by PdfLetter module.
-
- 
 
         args:
 
@@ -119,7 +112,6 @@ class DocxParagraph:
 
     TYPES = ["Paragraph","Spacer","Image","Listed Paragraph","Table"]
 
- 
 
     def __init__(self,parser,text,style,p_type:str="Paragraph",paragraph_key="",font:str="<font>{0}</font>",*args,**kwargs):
         self._text = text
@@ -170,7 +162,6 @@ class DocxParagraph:
             args:
                 yes_no_ques (str): The Yes/No question to prompt the user
 
-
         """
 
         while True:
@@ -187,9 +178,7 @@ class DocxParagraph:
 
 
     def add_style (self):
-
         """
-
             Ensures found word style objects are added to the text_styles with a place holder. Due to the unreliability of parsing word documents,
             placeholders ensure that the style is captured so it can be manually recreated when the JSON structure is reviewed/edited.
         
@@ -227,7 +216,6 @@ class DocxParagraph:
         
         # find all MAILMERGE fields, once found ensure that the fieldText is properly converted to a content_key
     
-
         cust_variables = ""
         
         para_keys = []#["{}".format(datetime.now().timestamp() * 1000)[::4]]
@@ -273,7 +261,6 @@ class DocxParagraph:
                     "wp":"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" }
 
         if "graphicData" in self._paragraph.xml:
-           # input(self._paragraph.xml)
             for a in ET.fromstring(self._paragraph.xml).findall('./w:r/w:drawing//a:graphic//*[@name]',namespaces):
                 
                 if a.attrib.get("name",False):
@@ -288,7 +275,7 @@ class DocxParagraph:
                     else:
                         self.image_name = "untilted graphic"
 
-                  
+    
        
         elif self._style.name.lower() == "list paragraph" or re.search(r"^(\u2022|\u2023|\u25E6|\u2043|\u2219).", self.content) != None:
             self.style = "Justify"
@@ -589,7 +576,7 @@ class Parser:
 
             if config["DEFAULTS"].getboolean("use_docx_file_name"):
                 file_location = (self.file_location.name.split("/")[-1]).split(".")[0] + ".json"
-                
+
 
             else:
 
