@@ -7,23 +7,17 @@ import sys
 from os import system
 from pandas import DataFrame, read_excel, read_csv, read_sql_query
 from collections import OrderedDict
-from tempfile import TemporaryDirectory
-from PyPDF2 import PdfFileMerger
+
+
 import pyodbc
 import re
 from time import sleep
-from datetime import date, datetime
+
 import numpy as np
 
-DEBUG = True
+DEBUG = False
 
 from tkinter.filedialog import asksaveasfile
-
- 
-
- 
-
- 
 
 
 cls = lambda *args: system('cls')
@@ -144,8 +138,6 @@ class Letter:
         # ensure column names are uppercase with whitespace replaced by "_"
         df = df.rename(df_col_mapper(df.columns),axis=1)
         
-       
-      
         letter = cls(dataframe=df,format_file=format_file)
  
 
@@ -220,7 +212,7 @@ def word_to_json(*args,**kwargs):
 
  
 
-def create_pdf (field_contents=None,pdf_name=None):
+def create_pdf_from_json (field_contents=None,pdf_name=None):
 
     # generate the pdfs to merge into one long PDF
     # this is required by the mailroom
@@ -232,35 +224,21 @@ def create_pdf (field_contents=None,pdf_name=None):
 
         print("Select the json template to load")
 
-        sleep(1.5)
+        sleep(0.5)
         
         format_file = json.load(filedialog.askopenfile(filetypes = [("json File", "*.json")]))
-        with open ('testletter.json') as f:
-            format_file = json.load(f)
+       
         if field_contents == None:
             letter = Letter.load_data_from_spreadsheet(format_file)
     
-        # Create a dictionary where the custom file name (set by the set_file_name function and file_name_keys)
-        # Using the custom_conntent dictionary we're able to declare specific items for the file_name
-        generated_pdfs = [PdfLetter.from_json_file(
-                            format_file=format_file,
-                            field_contents=cc,
-                            file_name = "{}".format(datetime.now().timestamp() * 1000)
-                            ) for cc in  PdfLetter.convert_dataframe(letter.dataframe,letter.format_file)]
-
- 
-
- 
-
-        Letter.merge_pdf(generated_pdfs,merged_pdf_name=format_file["page_style"]["default_name"])
+        generated_pdfs = PdfLetter.create_pdf(format_file,letter.dataframe)
+        PdfLetter.merge_pdf(generated_pdfs,merged_pdf_name=asksaveasfile(filetypes = [("PDF File",".pdf")], defaultextension = [("pdf File",".pdf")]).name )
+        
 
 
     except AttributeError as ae:
-
         print("Unable to locate the template specified, please check the name and try again.")
-
         if DEBUG == True:
-
             raise ae
 
  
@@ -268,7 +246,7 @@ def create_pdf (field_contents=None,pdf_name=None):
 def menu(field_contents=None):
 
    
-    menu_items = {"Parse Word File":"word_to_json","Create PDF From JSON":"create_pdf","Exit":"exit"}
+    menu_items = {"Parse Word File":"word_to_json","Create PDF From JSON":"create_pdf_from_json","Exit":"exit"}
 
 
     while True:
@@ -276,30 +254,20 @@ def menu(field_contents=None):
         cls()
 
         print("Make A selection:")
-
         for enum,item in enumerate(menu_items.keys()):
             print(f"{enum}.{item}")
 
         selection = list(menu_items.keys())[int(input("Enter a number: ")[0])]
-
         try:
             getattr(sys.modules[__name__],menu_items[selection])(field_contents)
+
+
+        except IndexError as ie:
+            input("Invalid Entry, please just enter a number corresponding to an option. Press Any Key to try again")
 
         except Exception as e:
             raise e
 
-            input( e )
-
- 
-
-        except IndexError as ie:
-
-            input("Invalid Entry, please just enter a number corresponding to an option. Press Any Key to try again")
-
- 
 
 if __name__ == '__main__':
-
- 
-
     menu()

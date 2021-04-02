@@ -13,7 +13,7 @@ from zipfile import BadZipFile
 import xml.etree.ElementTree as ET
 
  
-
+from pandas import DataFrame
 import base64
 import configparser
 import sys
@@ -82,7 +82,7 @@ def image_to_b64 ()->base64:
         if DEBUG:
             raise e
 
-  
+
 
 class DocxParagraph:
 

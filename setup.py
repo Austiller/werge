@@ -3,7 +3,7 @@ from pip._internal.req import parse_requirements
 
 setup(
     name="Werge",
-    version="0.0.21",
+    version="0.0.25",
     description="A library used to parse word files to a json structure that can be converted to PDF files",
     author="Austin Miller",
     author_email="Werge@Austins.site",

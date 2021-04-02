@@ -97,9 +97,8 @@ class PdfLetter:
                                 field_contents=fc,
                                 file_name = "{}".format(datetime.now().timestamp() * 1000)
                                 ) for fc in  PdfLetter.convert_dataframe(mfield_df,format_file)]
-
-
-           return generated_pdfs
+            
+            return generated_pdfs
 
 
         except AttributeError as ae:
