@@ -28,6 +28,7 @@ Responsible for combining the json template and merge_field content to produce p
 * Bulleted Lists
 ##### Pending
 * HTML Output
+* custom table styles
 * Non-Standard PDF Fonts
 
 #### To Install
