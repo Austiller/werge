@@ -13,12 +13,12 @@ Responsible for parsing the word document and returning a json representation of
 * Listed Paragraphs/Bullets
 * Images/Graphics
 * MergeFields
-* Non-Standard PDF Fonts
+* Standard PDF Fonts
 
 \*This project has given me a new appreciation for just how important the PDF standard is/was. 
 
 #### pdfLetter
-Responsible for combining the json template and custom_content to produce pdf file(s), the produced files can be stored locally or stored in a database. 
+Responsible for combining the json template and merge_field content to produce pdf file(s), the produced files can be stored locally or stored in a database. 
 ##### Currently Supports
 * Headers/Footers
 * Decking (Combining multiple letters into a single PDF)
@@ -28,6 +28,16 @@ Responsible for combining the json template and custom_content to produce pdf fi
 * Bulleted Lists
 ##### Pending
 * HTML Output
+* custom table styles
+* Non-Standard PDF Fonts
+
+#### To Install
+Download the zip and extract it then run the setup.py
+
+
+#### Example
+The example folder contains a example letter, json file and test data. The example uses a CSV file but any pandas DataFrame can be used to populate the mailMerge Fields, including DataFrames produced from SQL queries. 
+ 
 
 #### JSON Structure
 Essential to werge's functionality is the custom json structure representing the MS word file. 
@@ -35,6 +45,7 @@ Below is the default_structure found in the config folder, used as the basis for
 
 It's the basis for defining the layout of the resulting PDF, with full support for ReportLab and PDF text styles.
 
+You can see an example json structure and letter in the example folder.
 
 ```
 {
