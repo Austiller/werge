@@ -109,4 +109,4 @@ You can see an example json structure and letter in the example folder.
  
  
  ### Example
- The example.py is an example use-case that shows functionality of both docxParser and pdfLetter, rather than using a database as the central source a CSV file is used. 
+ The example.py is a small example app that shows functionality of both docxParser and pdfLetter,for simplicity a CSV file is used to populate the data fields rather than a centralized database like you'd expect in a production implementation of werge. 
