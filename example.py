@@ -19,8 +19,9 @@ DEBUG = False
 
 from tkinter.filedialog import asksaveasfile
 
-
+# clears the screen after menu selections.
 cls = lambda *args: system('cls')
+
 df_col_mapper = lambda cols: {col:re.sub(pattern=r" +",repl="_",string=col )for col in cols}
 exit = lambda *args:sys.exit(0)
 
