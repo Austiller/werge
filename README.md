@@ -2,7 +2,7 @@
 # werge
 
 ### Overview
-werge is a python library that allowsw for the centralization and automation of Microsoft Word (2007+) Mail Merge proccesses. With werge you can convert existing Microsoft Word documents into a JSON structure that can be combined with custom content to produce letters from a database, fileshare, or locally. There are two primary modules within werge:
+werge is a python library that allows for the centralization and automation of Microsoft Word (2007+) Mail Merge proccesses. With werge you can convert existing Microsoft Word documents into a JSON structure that can be combined with custom content to produce letters from a database, fileshare, or locally. There are two primary modules within werge:
 
 #### docxParser:
 Responsible for parsing the word document and returning a json representation of the word file. Because of the discrepencies in the Word and PDF standards, the parsing is not 100% accurate and never will be. Font and styles in general are often not able to be accurately parsed due differences in the PDF and MS Word structures*.  
