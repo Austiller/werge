@@ -1,4 +1,3 @@
-from PyPDF2 import PdfFileReader
 from tkinter import filedialog
 import json
 from docx import Document
